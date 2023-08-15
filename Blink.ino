@@ -1,14 +1,11 @@
 #include "wifi_connection.h"
 #include "websocket_connection.h"
-
-const int motorPin1 = 22;
-const int motorPin2 = 1; 
-const int motorPin3 = 3; 
-const int motorPin4 = 21;
-const int stepSequence[] = { B1000, B1100, B0100, B0110, B0010, B0011, B0001, B1001 };
-const int speed = 10;
+#include <ESP32Servo.h>
 
 WiFiConnection wifiConnection;
+Servo myservo;
+
+int pos = 0; 
 
 void setup() {
   Serial.begin(9600);
@@ -35,25 +32,21 @@ void loop() {
 }
 
 void motorBegin() {
-  pinMode(motorPin1, OUTPUT);
-  pinMode(motorPin2, OUTPUT);
-  pinMode(motorPin3, OUTPUT);
-  pinMode(motorPin4, OUTPUT);
+  myservo.attach(22);
 }
 
 void spinMotor() {
-  unsigned long startTime = millis();
-
-  while (millis() - startTime < 5000) {
-    for (int i = 0; i < 8; i++) {
-      int step = stepSequence[i];
-      digitalWrite(motorPin1, bitRead(step, 0));
-      digitalWrite(motorPin2, bitRead(step, 1));
-      digitalWrite(motorPin3, bitRead(step, 2));
-      digitalWrite(motorPin4, bitRead(step, 3));
-      delay(speed);
-    }
+  for (pos = 90; pos <= 135; pos++) {
+    myservo.write(pos);
+    delay(15);
   }
-
+  
+  delay(2000);
+  
+  for (pos = 135; pos >= 90; pos--) {
+    myservo.write(pos);
+    delay(15);
+  }
+  
   webSocketConnection.setMotorState(false);
 }
